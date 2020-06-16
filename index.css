@@ -1,0 +1,340 @@
+*::-webkit-scrollbar {
+  width: 0;
+}
+@keyframes running {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+#app {
+  width: 100vw;
+  height: 100vh;
+  background: url(imgs/bj.jpg) no-repeat;
+  background-size: 100% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --themeColor: #8fa498;
+}
+#app .app-box {
+  width: 800px;
+  height: 600px;
+  border: 1px solid var(--themeColor);
+  border-radius: 20px;
+  overflow: hidden;
+}
+#app .app-box .box-top {
+  height: 60px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--themeColor);
+  background-color: rgba(138, 139, 126, 0.3);
+}
+#app .app-box .box-top .top-title .iconfont {
+  color: coral;
+  font-size: 26px;
+}
+#app .app-box .box-top .top-title .theme {
+  background: linear-gradient(45deg, #78dce8, pink 80%, pink);
+  -webkit-background-clip: text;
+  color: transparent;
+  display: inline-block;
+  font-size: 20px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+}
+#app .app-box .box-top .top-right {
+  position: relative;
+}
+#app .app-box .box-top .top-right input {
+  width: 260px;
+  height: 28px;
+  border: 1px solid rgba(4, 119, 56, 0.7);
+  border-radius: 20px;
+  outline: none;
+  text-indent: 1em;
+  background: linear-gradient(45deg, #a9dc76, #d13736 70%, #78dcdc);
+  -webkit-background-clip: text;
+  color: transparent;
+  display: inline-block;
+  font-size: 20px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  caret-color: rgba(189, 238, 141, 0.3);
+}
+#app .app-box .box-top .top-right span.iconfont.icon-sousuo {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  color: #ab9df2;
+  font-size: 18px;
+}
+#app .app-box .app-main {
+  position: relative;
+  height: 480px;
+  background-color: rgba(181, 170, 173, 0.2);
+  display: flex;
+}
+#app .app-box .app-main .main-left {
+  flex: 2;
+}
+#app .app-box .app-main .main-left .left-list {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 100%;
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item {
+  padding: 10px;
+  height: 40px;
+  line-height: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item .iconfont.icon-bofang {
+  font-size: 24px;
+  color: #c04e4f;
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item .player-name {
+  height: 30px;
+  line-height: 30px;
+  width: 150px;
+  font-size: 16px;
+  color: rgba(228, 186, 201, 0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item .ico {
+  display: flex;
+  align-items: center;
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item .ico .iconfont.icon-shipinbofang {
+  font-size: 24px;
+  color: #252529;
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item:nth-child(odd) {
+  background-color: rgba(25, 40, 55, 0.3);
+}
+#app .app-box .app-main .main-left .left-list .app-player-songs-list-item:nth-child(even) {
+  background-color: rgba(155, 169, 161, 0.3);
+}
+#app .app-box .app-main .main-lyric {
+  height: 82%;
+  flex: 5;
+  border-left: 1px dotted var(--themeColor);
+  border-right: 1px dotted var(--themeColor);
+  margin-top: 3%;
+  overflow: auto;
+}
+#app .app-box .app-main .main-lyric .lyric-list {
+  text-align: center;
+}
+#app .app-box .app-main .main-lyric .lyric-list .lyric-item {
+  margin: 20px 0;
+  font-weight: 100;
+  transition: all 0.5s;
+  color: #ccc;
+}
+#app .app-box .app-main .main-lyric .lyric-list .lyric-item.cur-lrc {
+  color: #f44;
+  font-size: 18px;
+  font-weight: 200;
+  text-shadow: 0 0 5px #333;
+  animation: Glow 1.5s ease infinite alternate;
+}
+#app .app-box .app-main .main-lyric .revert {
+  position: absolute;
+  top: 92.5%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+#app .app-box .app-main .main-lyric .revert button {
+  width: 100px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: rgba(196, 204, 206, 0.1);
+  color: #ff7f50;
+  font-weight: 700;
+  font-size: 16px;
+  outline: none;
+  border: 0px;
+}
+#app .app-box .app-main .main-lyric .revert button:hover {
+  background-color: rgba(114, 46, 153, 0.4);
+}
+#app .app-box .app-main .main-middle {
+  flex: 5;
+  border-left: 1px dotted var(--themeColor);
+  border-right: 1px dotted var(--themeColor);
+  overflow: hidden;
+  position: relative;
+}
+#app .app-box .app-main .main-middle .middle-bar {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  z-index: 2;
+  transform: translate(-12px -12px) rotate(-15deg);
+  transform-origin: 12px 12px;
+  transition: all 2s;
+}
+#app .app-box .app-main .main-middle .playing {
+  transform: rotate(25deg);
+}
+#app .app-box .app-main .main-middle .cover {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+}
+#app .app-box .app-main .main-middle .disc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation-name: running;
+  animation-duration: 5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-play-state: paused;
+}
+#app .app-box .app-main .main-middle .autorotate {
+  animation-play-state: running;
+}
+#app .app-box .app-main .main-middle .dos {
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+}
+#app .app-box .app-main .main-middle .dos .iconfont {
+  font-size: 35px;
+  margin: 0 20px;
+  color: rgba(124, 49, 173, 0.9);
+}
+#app .app-box .app-main .lyric {
+  position: absolute;
+  bottom: 13%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#app .app-box .app-main .lyric button {
+  width: 100px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: rgba(196, 204, 206, 0.1);
+  color: #ff7f50;
+  font-weight: 700;
+  font-size: 16px;
+  outline: none;
+  border: 0px;
+}
+#app .app-box .app-main .lyric button:hover {
+  background-color: rgba(255, 68, 68, 0.6);
+}
+#app .app-box .app-main .main-right {
+  flex: 3;
+  width: 240px;
+  padding: 10px;
+}
+#app .app-box .app-main .main-right .right-title {
+  height: 30px;
+  color: rgba(241, 98, 153, 0.75);
+  font-size: 20px;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 300;
+}
+#app .app-box .app-main .main-right .rigth-list {
+  height: 440px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item {
+  padding: 5px;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .left-content {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .left-content .imageWrapper {
+  margin-right: 0.5em;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .left-content .imageWrapper img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .left-content .nickName {
+  font-weight: 400;
+  font-size: 18px;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .left-content .nickName p {
+  font-family: "Audiowide";
+  color: rgba(0, 166, 124, 0.8);
+  transition: all 1.5s ease;
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .left-content .nickName p:hover {
+  color: #fff;
+  animation: Glow 1.5s ease infinite alternate;
+}
+@keyframes Glow {
+  from {
+    text-shadow: 0 0 1px rgba(221, 221, 221, 0.7), 0 0 2px rgba(221, 221, 221, 0.7), 0 0 3px rgba(221, 221, 221, 0.7), 0 0 4px rgba(0, 166, 124, 0.9), 0 0 5px rgba(0, 166, 124, 0.9), 0 0 6px rgba(0, 166, 124, 0.9), 0 0 7px rgba(0, 166, 124, 0.9), 0 0 8px rgba(0, 166, 124, 0.9);
+  }
+  to {
+    text-shadow: 0 0 2px rgba(221, 221, 221, 0.7), 0 0 3px rgba(221, 221, 221, 0.7), 0 0 4px rgba(221, 221, 221, 0.7), 0 0 8px rgba(0, 166, 124, 0.9), 0 0 9px rgba(0, 166, 124, 0.9), 0 0 10px rgba(0, 166, 124, 0.9), 0 0 11px rgba(0, 166, 124, 0.9), 0 0 12px rgba(0, 166, 124, 0.9);
+  }
+}
+#app .app-box .app-main .main-right .rigth-list .list-item .content {
+  text-indent: 2em;
+  font-size: 17px;
+  color: #c05409;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-weight: 100;
+}
+#app .app-box .app-footer {
+  background-color: #f1f3f4;
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+#app .app-box .app-footer audio {
+  width: 100%;
+  outline: none;
+}
+#app .app-box .app-footer .video-box video {
+  transform: translate(-50%, -50%);
+  left: 50%;
+  height: 80%;
+  width: 80%;
+  position: fixed;
+  z-index: 999;
+  top: 50%;
+}
+#app .app-box .app-footer .video-box .vedio-close {
+  position: fixed;
+  color: white;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+#app .app-box .app-footer .video-box .video-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 1;
+  background-color: black;
+  z-index: 888;
+}

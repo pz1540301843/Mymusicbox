@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./index.css" />
+    <link
+      rel="stylesheet"
+      href="http://at.alicdn.com/t/font_1870464_x42e5tkckvs.css
+    "
+    />
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    [v-cloak] {
+      display: none;
+    }
+  </style>
+  <body>
+    <div id="app" v-cloak>
+      <div class="app-box">
+        <div class="box-top">
+          <div class="top-title">
+            <span class="iconfont icon-yinle"></span>
+            <span class="theme">Vue音乐盒</span>
+          </div>
+          <div class="top-right">
+            <input
+              type="text"
+              v-model="keywords"
+              @keyup.enter.stop="searchSongs"
+              v-focus
+            />
+            <span class="iconfont icon-sousuo" @click.stop="searchSongs"></span>
+          </div>
+        </div>
+        <div class="app-main">
+          <div class="main-left">
+            <div class="left-list">
+              <div
+                v-for="song,index in songs"
+                :key="index"
+                class="app-player-songs-list-item"
+              >
+                <div
+                  class="iconfont icon-bofang"
+                  @click.stop="playAudio(index)"
+                ></div>
+                <div class="player-name" :tilte="song.name">{{song.name}}</div>
+                <div class="ico">
+                  <div
+                    class="iconfont icon-shipinbofang"
+                    @click.stop="playMV(song.mvid)"
+                    v-show="song.mvid!=0"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 歌词播放界面 -->
+          <div class="main-lyric" v-show="islyric" ref="lrc">
+            <div class="lyric-list">
+              <div
+                :class="['lyric-item',{'cur-lrc': currentline == i}]"
+                v-if="islyric"
+                v-for="t,i in lrcArr"
+                :key="i"
+              >
+                <p class="">{{t.lrc}}</p>
+              </div>
+            </div>
+            <div class="revert">
+              <button @click.stop="revert">返回播放器</button>
+            </div>
+          </div>
+          <!-- 音乐播放接界面 -->
+          <div class="main-middle" v-show="!islyric">
+            <img
+              :class="['middle-bar',{playing:isAudioPlaying}]"
+              src="./imgs/player_bar.png"
+              alt=""
+            />
+            <img
+              class="cover"
+              :src="coverUrl===''?'./imgs/cover.jpg':coverUrl"
+              alt=""
+            />
+            <img
+              :class="['disc',{autorotate:isAudioPlaying}]"
+              src="./imgs/disc.png"
+              alt=""
+            />
+            <div class="dos">
+              <div
+                class="iconfont icon-shangyishou"
+                @click.stop="trimMucisc('up')"
+              ></div>
+              <div
+                class="iconfont icon-kaishibofang"
+                @click.stop="trimMucisc('current')"
+                v-show="!isAudioPlaying"
+              ></div>
+              <div
+                class="iconfont icon-zanting"
+                @click.stop="trimMucisc('current')"
+                v-show="isAudioPlaying"
+              ></div>
+              <div
+                class="iconfont icon-shangyishou1"
+                @click.stop="trimMucisc('next')"
+              ></div>
+            </div>
+            <div class="lyric">
+              <button class="getlyric" @click.stop="getlyric">获取歌词</button>
+            </div>
+          </div>
+          <div class="main-right">
+            <h5 class="right-title">热门留言</h5>
+            <div class="rigth-list">
+              <div
+                class="list-item"
+                v-for="comment,index in hotComments"
+                :key="index"
+              >
+                <div class="left-content">
+                  <div class="imageWrapper">
+                    <img :src="comment.user.avatarUrl" alt="" />
+                  </div>
+                  <div class="nickName"><p>{{comment.user.nickname}}</p></div>
+                </div>
+
+                <div class="content">{{comment.content}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="app-footer">
+          <audio
+            @play="play"
+            @pause="pause"
+            ref="audio"
+            :src="musicUrl"
+            @timeupdate="changeTime"
+            controls
+            loop
+            autoplay
+            v-myaudio
+          ></audio>
+          <div class="video-box" v-show="isVedioPlaying">
+            <div class="vedio-close" @click="closeMV">X</div>
+            <video ref="vedio" :src="vedioUrl" controls autoplay loop></video>
+            <div class="video-mask"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="./vue.js"></script>
+  <script src="./node_modules/axios/dist/axios.js"></script>
+  <script src="./axios/common.js"></script>
+
+  <script>
+    let app = new Vue({
+      el: "#app",
+      data: {
+        keywords: "热门", // 搜索的关键词
+        songs: [], //搜索的歌曲
+        musicUrl: "", //音乐的地址
+        vedioUrl: "", //MV地址
+        coverUrl: "", //封面地址
+        isAudioPlaying: false, //控制音乐动画样式
+        isVedioPlaying: false, //控制MV播放页面的显示
+        hotComments: [], //热门评论
+        myids: "0", //对应的歌曲对象下标 默认为0,
+        lyric: [],
+        lrcArr: [],
+        islyric: false,
+        currentline: 0,
+        access: false,
+      },
+      watch: {
+        currentline: function () {
+          this.$nextTick(() => {
+            // this.$refs.lrc.scrollTop = this.currentline > 5 ? 36 * (this.currentline - 5) : 0;
+            this.$refs.lrc.scrollTop =
+              this.currentline > 5 ? 42 * (this.currentline - 5) : 0;
+          });
+        },
+      },
+
+      mounted() {
+        // 初始化时 加载默认歌曲数据
+        Axios.get("/search", {
+          params: {
+            keywords: this.keywords,
+          },
+        }).then((res) => {
+          console.log(res);
+
+          this.songs = res.result.songs;
+          let id = this.songs[this.myids].id;
+
+          // 获取歌曲
+          Axios.get("/song/url", {
+            params: {
+              id: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.musicUrl = res.data[0].url;
+            this.isAudioPlaying = true;
+            // this.$nextTick(function() {
+            //   this.$refs.audio.play()
+            // })
+          });
+          // 获取封面
+          Axios.get("/song/detail", {
+            params: {
+              ids: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.coverUrl = res.songs[0].al.picUrl;
+          });
+          // 获取热门评论
+          Axios.get("/comment/hot?type=0", {
+            params: {
+              id: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.hotComments = res.hotComments;
+          });
+        });
+        //     .catch(function(error) {
+        //         console.log(error)
+        // })
+      },
+
+      methods: {
+        //   关闭MV
+        closeMV: function () {
+          this.$refs.vedio.pause();
+          this.isVedioPlaying = false;
+        },
+        // 播放时处理
+        play: function () {
+          this.isAudioPlaying = true;
+        },
+        // 暂停时处理
+        pause: function () {
+          this.isAudioPlaying = false;
+        },
+        // 搜索歌曲获取歌曲地址
+        searchSongs: function () {
+          Axios.get("/search", {
+            params: { keywords: this.keywords },
+          }).then((res) => {
+            console.log(res);
+            this.songs = res.result.songs;
+          });
+        },
+        // 播放歌曲获取对应歌曲地址，封面，评论
+        playAudio: function (myids) {
+          this.myids = myids;
+          let id = this.songs[this.myids].id;
+          this.isAudioPlaying = true;
+          // 获取歌曲
+          Axios.get("/song/url", {
+            params: {
+              id: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.musicUrl = res.data[0].url;
+            this.access = false;
+          });
+          // 获取封面
+          Axios.get("/song/detail", {
+            params: {
+              ids: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.coverUrl = res.songs[0].al.picUrl;
+          });
+          // 获取热门评论
+          Axios.get("/comment/hot?type=0", {
+            params: {
+              id: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.hotComments = res.hotComments;
+          });
+          this.islyric = false;
+        },
+        // 播放MV
+
+        playMV: function (mvid) {
+          Axios.get("/mv/url", {
+            params: {
+              id: mvid,
+            },
+          }).then((res) => {
+            console.log(res);
+            // 获取地址
+            this.vedioUrl = res.data.url;
+            // 停止播放音乐时的样式
+            this.isAudioPlaying = false;
+            // 停止播放音频
+            this.$refs.audio.pause();
+            // 开启MV播放页面
+            this.isVedioPlaying = true;
+          });
+        },
+
+        // 调整音乐播放
+        trimMucisc: function (trim) {
+          // 下一首
+          if (trim == "next") {
+            this.access = false;
+            if (this.myids++ >= 29) {
+              // this.myids = 29
+              return alert("没有下一首了！");
+            }
+            // 上一首
+          } else if (trim == "up") {
+            this.access = false;
+            if (this.myids-- <= 0) {
+              // this.myids = 0
+              return alert("没有上一首了！");
+            }
+          } else if (trim == "current") {
+            // 暂停/开始音乐播放
+            this.isAudioPlaying = !this.isAudioPlaying;
+            // 停止播放音频
+            if (this.isAudioPlaying) {
+              this.$refs.audio.play();
+            } else {
+              this.$refs.audio.pause();
+            }
+          }
+
+          // 获取id
+          let id = this.songs[this.myids].id;
+          // 播放更改样式
+          this.isAudioPlaying = true;
+          // 获取歌曲
+          Axios.get("/song/url", {
+            params: {
+              id: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.musicUrl = res.data[0].url;
+          });
+          // 获取封面
+          Axios.get("/song/detail", {
+            params: {
+              ids: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.coverUrl = res.songs[0].al.picUrl;
+          });
+          // 获取热门评论
+          Axios.get("/comment/hot?type=0", {
+            params: {
+              id: id,
+            },
+          }).then((res) => {
+            console.log(res);
+            this.hotComments = res.hotComments;
+          });
+        },
+        // 获取歌词
+        getlyric: function () {
+          this.islyric = true;
+
+          if (!this.access) {
+            this.lrcArr = [];
+            Axios.get("/lyric", {
+              params: {
+                id: this.songs[this.myids].id,
+              },
+            }).then((res) => {
+              console.log(res);
+              this.lyric = res.lrc.lyric.split("\n");
+
+              this.lyric.forEach((ele) => {
+                let timeStr = ele.split("]")[0].slice(1);
+                let keyTime =
+                  +timeStr.split(":")[0] * 60 +
+                  +timeStr.split(".")[0].slice(-2) +
+                  +timeStr.split(".")[1] / 1000 -
+                  0.5;
+                if (ele.slice(11).trim() !== "") {
+                  this.lrcArr.push({
+                    time: keyTime,
+                    lrc: ele.split("]")[ele.split("]").length - 1],
+                  });
+                }
+              });
+              console.log(this.lyric);
+              console.log(this.lrcArr);
+              this.access = true;
+            });
+          }
+        },
+        changeTime(e) {
+          console.log(this.currentline);
+          for (let i = 0; i < this.lrcArr.length; i++) {
+            if (
+              e.target.currentTime - this.lrcArr[i].time <= 0.5 &&
+              e.target.currentTime >= this.lrcArr[i].time
+            ) {
+              this.currentline = i;
+
+              break;
+            }
+          }
+        },
+        revert: function () {
+          this.islyric = false;
+        },
+      },
+      //   自定义指令
+      directives: {
+        //   自动聚焦
+        focus: {
+          inserted: function (el, binding) {
+            el.focus();
+          },
+        },
+        // 调节音量
+        myaudio: {
+          inserted: function (el, binding) {
+            el.volume = 0.2;
+          },
+        },
+      },
+    });
+  </script>
+</html>
